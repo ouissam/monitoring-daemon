@@ -1,4 +1,4 @@
-monitoringclient
+monitoring-daemon
 ================
 
 Monitoring - Daemon
