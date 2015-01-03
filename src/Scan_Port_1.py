@@ -1,5 +1,10 @@
 import socket, sys
 
+'''
+Scan_Port_1.py @IP Port1 Port2
+'''
+
+
 if len(sys.argv) != 4:
 	print("Mauvais usage")
 	exit()

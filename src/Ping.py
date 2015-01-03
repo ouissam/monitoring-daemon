@@ -12,6 +12,7 @@ def ping(hostname, count):
             print("Invalid IP Address !")
             exit(1)
     else:
+        ## /!\ grep et chemin a changer pour windows
         status_Ping = os.system('ping ' + hostname + ' -' + option + ' ' + count + "| grep time= | cut -d'=' -f4 >> /tmp/test_daemon") 
 
 
