@@ -1,4 +1,5 @@
-import os, sys, re, socket, platform
+import os, sys, re, socket, platform, pymongo, datetime
+from pymongo import MongoClient
 
 ValidIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
 
@@ -12,10 +13,10 @@ def ping(hostname, count):
             print("Invalid IP Address !")
             exit(1)
     else:
-        ## /!\ grep et chemin a changer pour windows
-        status_Ping = os.system('ping ' + hostname + ' -' + option + ' ' + count + "| grep time= | cut -d'=' -f4 >> /tmp/test_daemon") 
+        status_Ping = os.system('ping ' + hostname + ' -' + option + ' ' + count) 
+        return status_Ping
 
-
+    
 def Main():
     try:
         hostname = socket.gethostbyname(sys.argv[1])
