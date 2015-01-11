@@ -1,4 +1,4 @@
-import sys, time, pymongo, re
+import sys, time, pymongo, re, subprocess
 from Daemon_Generic import *
 from Ping import *
 from pymongo import *
@@ -19,30 +19,32 @@ class MyDaemon(daemon):
         dateNow = time.localtime()
         dateNow = str(dateNow.tm_year) + "-" + str(dateNow.tm_mon) + "-" + str(dateNow.tm_mday) + "_"+ str(dateNow.tm_hour) + "-" + str(dateNow.tm_min) + "-" + str(dateNow.tm_sec)
         log = "/tmp/log_" + str(dateNow)
-        #log = "/tmp/log"
         while True:
             #distinct permet de recuperer uniquement les valeurs (sans les cles)
             ips = computers.distinct('ip')    
             periode = self.periode
-            os.system("echo ****************Debut " + str(i) + " : Periode = " + periode + "**************** >> " + log)
+            subprocess.call("echo ****************Debut " + str(i) + " : Periode = " + periode + "**************** >> " + log, shell=True)
             for ip in ips:
                 active_ip = computers.find({"ip" : ip}).distinct('active')
                 status = ping(ip, "1")
                 if(status == 0):
                     if(active_ip == False):
                         computers.update({"ip" : ip}, {"$set" : {"active": True}})                
-                        os.system("echo " + str(i) + " : " + ip + " = true + modif >> " + log)
+                        subprocess.call("echo " + str(i) + " : " + ip + " = true + modif >> " + log, shell=True)
                     else:
-                        os.system("echo " + str(i) + " : " + ip + " = true + non modif >> " + log)
+                        subprocess.call("echo " + str(i) + " : " + ip + " = true + non modif >> " + log, shell=True)
                 else:
                     if(active_ip == True):
                         computers.update({"ip" : ip}, {"$set" : {"active": False}})    
-                        os.system("echo " + str(i) + " : " + ip + " = false + modif >> " + log)
+                        subprocess.call("echo " + str(i) + " : " + ip + " = false + modif >> " + log, shell=True)
                     else:
-                        os.system("echo " + str(i) + " : " + ip + " = false + non modif >> " + log)                
-            os.system("echo ****************Fin " + str(i) + " : Periode = " + periode + "**************** >> " + log)        
+                        subprocess.call("echo " + str(i) + " : " + ip + " = false + non modif >> " + log, shell=True)                
+            subprocess.call("echo ****************Fin " + str(i) + " : Periode = " + periode + "**************** >> " + log, shell=True)        
             i += 1
             time.sleep(float(periode))
+            
+            
+            
             
 if __name__ == "__main__":        
     periode = '5'
