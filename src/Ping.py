@@ -1,4 +1,4 @@
-import os, sys, re, socket, platform, pymongo, datetime
+import os, sys, subprocess, re, socket, platform, pymongo, datetime
 from pymongo import MongoClient
 
 ValidIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -13,8 +13,15 @@ def ping(hostname, count):
             print("Invalid IP Address !")
             exit(1)
     else:
-        status_Ping = os.system('ping ' + hostname + ' -' + option + ' ' + count) 
-        return status_Ping
+        #status_Ping = os.system('ping ' + hostname + ' -' + option + ' ' + count) 
+        options = '-' + option + ' ' + count
+        status_Ping = subprocess.Popen(["ping", options, hostname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, error = status_Ping.communicate()
+        #print(out)
+        #print(error)
+        status = status_Ping.returncode
+        return status
+        #return status_Ping
 
     
 def Main():
