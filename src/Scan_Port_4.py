@@ -8,7 +8,6 @@ import socket
 import argparse
 import sys
 
-
 def main():
     parser = argparse.ArgumentParser(description='Scan_port.py')
     parser.add_argument('-sS', '--tcpscan', action='store_true', help='Enable this for TCP scans')
