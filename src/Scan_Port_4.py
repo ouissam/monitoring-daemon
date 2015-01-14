@@ -36,7 +36,7 @@ def main():
         tcpports = portscan(target,ports,args.tcpscan)
 
 def portscan(target,ports,tcp):
-    printmsg(("Now scanning %s" % (target)))
+    print("Now scanning " + target)
     tcpports=[]
     
     if tcp:
@@ -48,16 +48,17 @@ def portscan(target,ports,tcp):
             except Exception:
                 failvar = 0
             else:
-                print("%d/tcp \topen") % (portnum)
+                print(str(portnum) + "/tcp \topen")
                 tcpports.append(portnum)
             s.close()
-            printmsg(("%i open TCP ports of %i ports scanned" % (len(tcpports),len(ports))))
+        
+        printmsg(("%i open TCP ports of %i ports scanned" % (len(tcpports),len(ports))))
     return tcpports
 
 def errormsg(msg): 
-    print("Error: %s") % (msg) ; sys.exit(1)
+    print("Error: " + msg) ; sys.exit(1)
 def printmsg(msg): 
-    print("Scan_port.py: %s") % (msg)
+    print("Scan_port.py: " + msg)
 
 if __name__ == "__main__":
     main()
