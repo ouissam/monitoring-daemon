@@ -107,7 +107,7 @@ def test_Scan():
         scanComputer(ip, "southpark", "southpark")
         ports = networks.scanTCP(ip)
         for p in ports:
-            print("ip " + ip + " <=> ports " + ports)
+            print("ip " + ip + " <=> ports " + str(ports))
             scanService(p, ip, "southpark", "southpark")
         
     

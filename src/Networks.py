@@ -6,7 +6,7 @@ __author__="sakatiamy"
 __date__ ="$14 janv. 2015 18:41:54$"
 
 import subprocess, nmap, time
-from Scan_Port_4 import *
+from Scan_Port_2 import *
  
 class Networks:
     
@@ -61,9 +61,12 @@ class Networks:
     def setNetworksDictionary(self, networks_dictionary):
         Networks.networks_dictionary = networks_dictionary
         
-    def scanTCP(self, ip_address, ports="1-65535"):
-        ports_ouverts = portscan(ip_address, ports)
-        return ports_ouverts
+    def scanTCP(self, ip_address):
+        #ports_ouverts = portscan(ip_address, ports)
+        #return ports_ouverts
+        res = scanProcess(ip_address)
+        ports = parseResultat(res)
+        return ports
     
     
     def scanTCP_NMAP(self, ip_address):
