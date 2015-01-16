@@ -6,11 +6,15 @@ __author__="sakatiamy"
 __date__ ="$14 janv. 2015 18:41:54$"
 
 import subprocess, nmap, time
+from Scan_Port_4 import *
  
 class Networks:
     
     networks_dictionary = {}
     networks_dictionary_Bis = {}
+    
+    def __init__(self, nm):
+        self.nm = nm
            
     def getNetworksDictionary(self):
         ip = subprocess.Popen(["ip", "-o", "-f", "inet", "addr", "show"], stdout=subprocess.PIPE)
@@ -41,23 +45,40 @@ class Networks:
         return Networks.networks_dictionary_Bis
 
     def getHosts(self, networks_dictionary):
-        nm = nmap.PortScanner()
         hosts = []
         for network_name, network_ip in networks_dictionary.items():
-            nm.scan(hosts=network_ip, arguments='-sL')
-            hosts += nm.all_hosts()
+            self.nm.scan(hosts=network_ip, arguments='-sL')
+            hosts += self.nm.all_hosts()
         return hosts
 
     def getActiveHosts(self, networks_dictionary):
-        nm = nmap.PortScanner()
         hosts_active = []
         for network_name, network_ip in networks_dictionary.items():
-            nm.scan(hosts=network_ip, arguments='-sP')
-            hosts_active += nm.all_hosts()
+            self.nm.scan(hosts=network_ip, arguments='-sP')
+            hosts_active += self.nm.all_hosts()
         return hosts_active
 
     def setNetworksDictionary(self, networks_dictionary):
         Networks.networks_dictionary = networks_dictionary
+        
+    def scanTCP(self, ip_address, ports="1-65535"):
+        ports_ouverts = portscan(ip_address, ports)
+        return ports_ouverts
+    
+    
+    def scanTCP_NMAP(self, ip_address):
+        print()
+        self.nm.scan(hosts=ip_address, arguments='-sS')
+        print(self.nm.all_hosts())
+        for host in self.nm.all_hosts():
+            print('----------------------------------------------------')
+            print('State : ' + self.nm[host].state())
+            print('----------')
+            print('Protocol : ' + 'tcp')
+            lport = self.nm[host]['tcp'].keys()
+            lport.sort()
+            for port in lport:
+                print('port : ' + port + '\tstate : ' + self.nm[host]['tcp'][port]['state'])
         
 '''
 if __name__ == "__main__":

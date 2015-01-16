@@ -1,60 +1,87 @@
-#Basic Port Scanner
+#! /usr/bin/python
 
-import optparse
-from socket import *
-from threading import *
+# To change this license header, choose License Headers in Project Properties.
+# To change this template file, choose Tools | Templates
+# and open the template in the editor.
 
-screenLock = Semaphore(value=1)
+__author__="sakatiamy"
+__date__ ="$11 janv. 2015 15:40:53$"
 
-def connScan(tgtHost, tgtPort):
-	try:
-		connSkt = socket(AF_INET, SOCK_STREAM)
-		connSkt.connect((tgtHost, tgtPort))
-		connSkt.send('hello\r\n')
-		
-		results = connSkt.recv(100)
-		screenLock.acquire()
-		print "[+] " + str(tgtPort) + "/tcp open"
-	except:
-		screenLock.acquire()
-		print "[-] " + str(tgtPort) + "/tcp closed"
-	finally:
-		screenLock.release()
-		connSkt.close()
+import nmap, subprocess, re, pymongo
+from MongoDB import *
 
-def portScan(tgtHost, tgtPorts):
-	try:
-		tgtIP = gethostbyname(tgtHost)
-	except:
-		print "[-] Cannot resolve " + tgtHost + ": Unknown host"
-		return
-	try:
-		tgtName = gethostbyaddr(tgtIP)
-		print "\n[+] Scan Results for: " + tgtName[0]
-	except:
-		print "\n[+] Scan results for: " + tgtIP
-	
-	setdefaulttimeout(1)
-	for tgtPort in tgtPorts:
-		t = Thread(target=connScan, args=(tgtHost, int(tgtPort)))
-		t.start()
+def scanProcess(ip_address):
+    scan = subprocess.check_output(["nmap", "-sS", ip_address])
+    resultat = scan.decode('utf-8')
+    res = resultat.splitlines()
+    return res
 
-def Main():
-	parser = optparse.OptionParser('usage %prog '+\
-		'-H <target host> -p <target port>')
-	parser.add_option('-H', dest='tgtHost', type='string', \
-		help='specify target host')
-	parser.add_option('-p', dest='tgtPort', type='string', \
-		help='specify target port[s] seperated by comma')
-	(options, args) = parser.parse_args()
-	if (options.tgtHost == None) | (options.tgtPort == None):
-		print parser.usage
-		exit(0)
-	else:
-		tgtHost = options.tgtHost
-		tgtPorts = str(options.tgtPort).split(',')
+def scanProcess(ip_address, ports):
+    scan = subprocess.check_output(["nmap", "-sS", ip_address, "-p", ports])
+    resultat = scan.decode('utf-8')
+    res = resultat.splitlines()
+    return res
 
-	portScan(tgtHost, tgtPorts)
+def parseResultat(resultat):
+    ports = {}
+    for line in resultat:
+        line = re.sub("[ ]{2,}", " ", line)
+        if "open" in line or "filtered" in line or "closed" in line:
+            print(line)
+            port = line.split("/")[0]
+            status = line.split(" ")[1]
+            name = line.split(" ")[2]
+            ports[port] = name
+    return ports
+
+def getServices():
+    mongo = MongoDB()
+    mongo.setDatabas,e('test')
+    mongo.findCollections()
+    collections = mongo.getCollections()
+    users = mongo.getCollection('users')
+    computers = mongo.getCollection('computers')
+    ips = computers.distinct('ip')
+    print("ips : " + str(ips))
+    for ip in ips:
+        print("-----------AVANT-----------")
+        print(ip)
+        services_ip = computers.find({"ip" : ip}).distinct('services')
+        print(services_ip)
+        res = scanProcess(ip)
+        ports = parseResultat(res)
+        for k, v in ports.items():
+            #ervice = {"name" : v, "port" : k, "active" : True}
+            #computers.update({"ip" : ip, "services.name": v}, {"$set" : {"services.$.name": v, "services.$.port": k, "services.$.active": True}}, uspert=True)                
+            #exist = computers.find({"ip" : ip, "services.name" : v}).distinct('services')
+            exist = computers.find({"ip" : ip, "services.name" : v, "services.port" : k}).count()
+            #print("Le service " + v + " existe : " + str(exist))
+            if(exist == 0):
+                #print("oui")
+                computers.update({"ip" : ip}, {"$addToSet" : {"services": {"name": v, "port": k, "active": True}}})                
+            else:
+                #print("non")
+                computers.update({"ip" : ip, "services.name" : v}, {"$set" : {"services.$.active" : False}})                                
+        print("-----------APRES-----------")
+        services_ip = computers.find({"ip" : ip}).distinct('services')
+        print(services_ip)
+        print("----------------------")
 
 if __name__ == '__main__':
-	Main()
+    '''
+    ip = "192.168.1.1"
+    r = scanProcess(ip)
+    ports = parseResultat(r)
+    print("---------")
+    print(ports)
+    '''
+    ip = "192.168.1.1"
+    ip = "10.10.115.91"
+    ports = "1024, 6000"
+    r = scanProcess(ip, ports)
+    ports = parseResultat(r)
+    print("---------")
+    print(ports)
+    #getServices()
+
+    
