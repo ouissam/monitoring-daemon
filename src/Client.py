@@ -60,7 +60,8 @@ def scanComputer(ip, username, password):
 
 def scanService(port, ip, username, password):
     rawip = ip.replace(".", "")
-    params_service = { "name" : "service_"+str(port), "port" : port, "active" : True} 
+    timeNow = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+    params_service = { "name" : "service_"+str(port), "port" : port, "active" : True, "testResult" : "open", "testDate" : timeNow} 
     params_computer = {"name" : rawip, "ip" : ip}
     restAPI_Service(params_computer, params_service, username, password)
     

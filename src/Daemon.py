@@ -24,7 +24,6 @@ class MyDaemon(daemon):
             #distinct permet de recuperer uniquement les valeurs (sans les cles)
             ips = computers.distinct('ip')  
             periode = self.periode
-            #subprocess.call("echo ****************Debut " + str(i) + " : Periode = " + periode + "**************** >> " + log, shell=True)
             for ip in ips:
                 active_ip = computers.find({"ip" : ip}).distinct('active')
                 if(active_ip[0] == True):
@@ -32,11 +31,18 @@ class MyDaemon(daemon):
                     timeNow = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
                     if(status == 0): 
                         computers.update({"ip" : ip}, {"$set" : {"last_ping_date": timeNow, "successfull_ping_date": timeNow}})                
-                        #subprocess.call("echo " + str(i) + " : " + ip + ", Allumee et modification des 2 dates >> " + log, shell=True)
                     else:
                         computers.update({"ip" : ip}, {"$set" : {"last_ping_date": timeNow}})                
-                        #subprocess.call("echo " + str(i) + " : " + ip + ", Eteinte et modification d'une date >> " + log, shell=True)
-            #subprocess.call("echo ****************Fin " + str(i) + " : Periode = " + periode + "**************** >> " + log, shell=True)        
+                    services = computers.find({"ip" : ip}).distinct('services.port')
+                    print(services)
+                    for service in services:
+                        res = scanProcessPort(ip, str(service))
+                        timeNow = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+                        ports, status = parseResultatStatus(res)
+                        for k, v in ports.items():
+                            monitoring = computers.find({"ip" : ip, "services.name" : v, "services.port" : int(k)}).distinct("services.active")
+                            if(monitoring[0] == True):
+                                computers.update({"ip" : ip, "services.port" : int(k)}, {"$set" : {"services.$.name" : str(v), "services.$.testResult" : status[k], "services.$.testDate" : timeNow}})     
             i += 1
             time.sleep(float(periode))
 
